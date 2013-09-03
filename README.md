@@ -2,7 +2,7 @@
 
 This is a hobby project that aims to generate simple tunes programatically using Javascript.
 
-This project uses [MIDI.js](http://mudcu.be/midi-js/) to generate the sounds and [Raphaël](http://raphaeljs.com/) for the scv graphics to draw the piano.
+This project uses [MIDI.js](http://mudcu.be/midi-js/) to generate the sounds, [Raphaël](http://raphaeljs.com/) for the SVG graphics to draw the piano, and I'm using [Compass](http://compass-style.org/) to compile the css.
 
 I've basically been writing javascript to model the structure necessary to produce a melody.
 My hope is that this thing will some day be able to generate randomized simple melodies that sound reasonably appealing.
