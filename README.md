@@ -16,6 +16,5 @@ It can take you on an emotional rollercoaster if you find yourself immersed in i
 I've been developing this sense of reverence for music for a while. This project is a way of cultivating that appreciation.
 
 I'm interested to crack the code, to see how it operates. I want to discover the patterns. I want to break it down and witness it's components on all scales.
-
 I wan't to break pop music. I want to generate formulaic pop songs that sound ok, then see what I can do to break the formula in various way, then find out if it makes it more interesting.
 
