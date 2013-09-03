@@ -13,20 +13,6 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
   
   var init = function(){
     piano = new Piano($piano[0]);
-    //var note = 21;//middle C
-    //setInterval(function(){
-    //  if (note < 100){
-    //    playNote(note);
-    //    note++;
-    //  }
-    //}, 3e2);
-    
-    //var key = Math.round(Math.random()*11);
-    //for (var n = 0; n<5; n++){
-    //  var note = Note.generate({key:key});
-    //  note.play();
-    //  piano.keys[note.note].flash();
-    //}
     
     window.scale = new Scale();
     //window.scale = Scale.generate();
@@ -36,14 +22,10 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     window.progression = progression = new Progression(scale);
     
     
-    
-    //var cm = 0;
-    //var interval = setInterval(function(){
-    //  scale.getChord(cm++).play();
-    //  if (cm > 20){
-    //    clearInterval(interval);
-    //  }
-    //}, tempo);
+    var $play = $('<button>').html('Play Something').appendTo($controls).click(function(e){
+      console.log(e);
+      progression.play();
+    });
   }
   
   window.Scale = function(_options){
