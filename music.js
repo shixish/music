@@ -19,11 +19,20 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     //window.scale = new Scale({tonic: 8, type: "Major"})
     //window.scale = new Scale({tonic: 0, type: "Major"})
     //window.scale = new Scale({tonic: 1, type: "Minor"})
-    window.progression = progression = new Progression(scale);
+    //
     
+    var changeScale = function(){
+      window.scale = Scale.generate();
+    }
+    
+    var $currentScale = $('<span>').html(window.scale.toString()).appendTo($('<div>').append('<b>Current Scale:</b> ').appendTo($controls));
+    var $newScale = $('<button>').html('New Scale').appendTo($controls).click(function(e){
+      window.scale = Scale.generate();
+      $currentScale.html(window.scale.toString());
+    });
     
     var $play = $('<button>').html('Play Something').appendTo($controls).click(function(e){
-      console.log(e);
+      progression = new Progression(scale);
       progression.play();
     });
   }
@@ -100,11 +109,11 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
   //See: http://musictheory.alcorn.edu/Version2/theory1/Roman.htm
   window.Scale.chord_qualities = {
     'Major':['Major', 'Minor', 'Minor', 'Major', 'Major', 'Minor', 'Diminished'],
-    'Minor':['Minor', 'Diminished', 'Major', 'Minor', 'Major', 'Major', 'Diminished'],//natural minor
+    'Minor':['Minor', 'Diminished', 'Major', 'Minor', 'Minor', 'Major', 'Major'],//'Major', 'Major', 'Diminished'],//natural minor
     'HMinor':['Minor', 'Diminished', 'Augmented', 'Minor', 'Major7', 'Major', 'Diminished'],
     'MMinor':['Minor', 'Minor', 'Augmented', 'Major', 'Major', 'Diminished', 'Diminished'],
   };
-  window.Scale.tonic_map = ['C', 'D', 'E', 'F', 'G', 'A', 'B'];
+  window.Scale.tonic_map = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
   //http://www.tsmp.org/theory/lias/pdf/quickfacts.pdf
   //I ii iii IV V vi vii°
   window.Scale.generate = function(){
@@ -247,21 +256,37 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
   //    }
   //  }
   //}
-  
+  window.Composition = function(){
+    
+  }
   
   window.Progression = function(_scale, _octave){
     this.scale = _scale;
     this.octave = _octave!=undefined?parseInt(_octave):default_octave;
     this.progression = [];
     //this.bpm = 4; //beats per measure
+    //this.progression.push([0, scale.getChord(0, this.octave, 1)]);
+    //this.progression.push([1, scale.getChord(0, this.octave, .25)]);
+    //this.progression.push([1.30, scale.getChord(0, this.octave, .75)]);
+    //this.progression.push([2, scale.getChord(2, this.octave, 1)]);
+    //this.progression.push([3, scale.getChord(1, this.octave, 1)]);
+    //this.progression.push([4, scale.getChord(4, this.octave, 1)]);
+    //this.progression.push([5, scale.getChord(5, this.octave, 1)]);
+    //this.progression.push([6, scale.getChord(0, this.octave+1, 3)]);
+    
+    
     this.progression.push([0, scale.getChord(0, this.octave, 1)]);
-    this.progression.push([1, scale.getChord(0, this.octave, .25)]);
-    this.progression.push([1.30, scale.getChord(0, this.octave, .75)]);
+    this.progression.push([1, scale.getChord(1, this.octave, 1)]);
     this.progression.push([2, scale.getChord(2, this.octave, 1)]);
-    this.progression.push([3, scale.getChord(1, this.octave, 1)]);
+    this.progression.push([3, scale.getChord(3, this.octave, 1)]);
     this.progression.push([4, scale.getChord(4, this.octave, 1)]);
     this.progression.push([5, scale.getChord(5, this.octave, 1)]);
-    this.progression.push([6, scale.getChord(0, this.octave+1, 3)]);
+    this.progression.push([6, scale.getChord(6, this.octave, 1)]);
+    this.progression.push([7, scale.getChord(7, this.octave, 1)]);
+    
+    this.generate = function(){
+      
+    }
     
     this.play = function(){
       //var pos = 0, len = this.progression.length;
