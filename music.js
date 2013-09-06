@@ -32,7 +32,7 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     });
     
     var $play = $('<button>').html('Play Something').appendTo($controls).click(function(e){
-      progression = new Progression(scale);
+      progression = new Progression(scale, 3).generate();
       progression.play();
     });
   }
@@ -126,8 +126,6 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
   }
   
   window.Chord = function(_root, _quality){
-    //this.notes.push();
-    
     this.setQuality = function(_quality){
       his.quality = Chord.quality_map[_quality]?_quality:'Major';
       this.reset.call(this);
@@ -136,11 +134,16 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     this.add = function(_interval){
       var step = this.getStepSize(_interval);
       if (step >= 0)
-        this.notes.push(new Note(this.root.note()+step));//Major7 is 11 steps
+        this.notes.push([1, new Note(this.root.note()+step)]);//Major7 is 11 steps
       return this;
     }
     
     this.remove = function(_id){
+      if (_id == undefined) {
+        if (Math.random.flip())//reduce the changes of it deleting something
+          return this;
+        _id = Math.random.range(0, this.notes.length-1);
+      }
       this.notes.splice(_id, 1);
       return this;
     }
@@ -160,37 +163,69 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
         console.log(_interval+' is not a valid interval!');
         return FALSE;
       }
-      
     }
     
-    this.invertUp = function(n){
-      var note = this.notes.shift();
-      this.notes.push(note.octaveUp());
-      if (n>0) return this.invertUp(n-1);
+    this.invertUp = function(){
+      var note_array = this.notes.shift();
+      //0 is the start timing, 1 is the actual note
+      note_array[1].octaveUp();
+      this.notes.push(note_array);
+    }
+    
+    this.invertDown = function(){
+      var note_array = this.notes.pop();
+      //0 is the start timing, 1 is the actual note
+      note_array[1].octaveDown();
+      this.notes.unshift(note_array);
+    }
+    
+    this.invert = function(type, n){
+      if (n == undefined) n = 1;
+      else n = parseInt(n);
+      switch (type){
+        case 'up':
+          for (var i = 0; i<n;i++) this.invertUp();
+          break;
+        case 'down':
+          for (var i = 0; i<n;i++) this.invertDown();
+          break;
+        default:
+          for (var i = 0; i<n;i++){
+            switch(Math.random.range(0, 2)){
+              case 0: 
+                this.invertUp();
+              case 1:
+                this.invertDown();
+            }
+          }
+          break;
+      }
       return this;
     }
     
-    this.invertDown = function(n){
-      var note = this.notes.pop();
-      this.notes.unshift(note.octaveDown());
-      if (n>0) return this.invertDown(n-1);
+    this.contract = function(amount){
+      for (var n in this.notes){
+        this.notes[n][1].contract(amount);
+      }
       return this;
     }
     
-    this.play = function(length){
-      if (MIDI.api){
-        for (var n in this.notes){
-          this.notes[n].play(length);
-        }
+    this.extend = function(amount){
+      for (var n in this.notes){
+        this.notes[n][1].extend(amount);
+      }
+      return this;
+    }
+    
+    this.play = function(){
+      for (var n in this.notes){
+        (function(start, note){
+          setTimeout(function(){
+            note.play();
+          }, start);
+        })(this.notes[n][0]*beat_length, this.notes[n][1]);
       }
     }
-    
-    //var options = _options||{};
-    this.root = _root || new Note(60); //middle C
-    this.quality = Chord.quality_map[_quality]?_quality:'Major';
-    var duration = this.root.duration();
-    //this.chromas = [_scale.note[this.root]];
-    this.notes = [];
     
     this.reset = function(){
       var pattern;
@@ -202,12 +237,32 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
       for (var i in pattern){
         var step = this.getStepSize(pattern[i]);
         if (step == 0){
-          this.notes.push(this.root);
+          this.notes.push([0, this.root]);
         }else{
-          this.notes.push(new Note(this.root.note()+step, duration));
+          this.notes.push([0, new Note(this.root.note()+step, duration)]);
         }
       }
     }
+    
+    this.arpeggiate = function(amount){
+      amount = amount>0?amount:1;
+      for (var i in this.notes){
+        this.notes[i][0] += i*amount;
+      }
+      return this;
+    }
+    
+    //
+    //Initialize
+    //
+    
+    //var options = _options||{};
+    this.root = _root || new Note(60); //middle C
+    this.quality = Chord.quality_map[_quality]?_quality:'Major';
+    var duration = this.root.duration();
+    //this.chromas = [_scale.note[this.root]];
+    this.notes = [];
+    
     this.reset.call(this);
   }
   window.Chord.generate = function(){
@@ -222,7 +277,8 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     'd5':6,'P5':7,'A5':8,
     'd6':7,'m6':8,'M6':9,'A6':10,
     'd7':9,'m7':10,'M7':11,'A7':12,
-    'd8':11,'P8':12};
+    'd8':11,'P8':12
+  };
   window.Chord.prototype.toString = function(){
     var ret = this.root + ' ' + this.quality + ' chord (';
     for (var i in this.notes){
@@ -233,30 +289,12 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     ret += ')';
     return ret;
   }
-  //window.Chord = function(_scale, _options){
-  //  this.scale = _scale;
-  //  //this.notes = _notes||[];
-  //  var options = _options||{};
-  //  this.root = options.root||(Math.round(Math.random()*(scale.notes.length-1)));
-  //  this.quality = options.quality||'Major';
-  //  this.chromas = [_scale.note[this.root]];
-  //  
-  //  this.notes.push();
-  //  switch (this.quality){
-  //    case 'Major':
-  //      this.notes.push(scale.note[this.root]);
-  //  }
-  //  //this.notes = [this.scale.getNote(id, _octave), this.scale.getNote(id+2, _octave), this.scale.getNote(id+4, _octave)];
-  //  
-  //  this.play = function(length){
-  //    if (MIDI.api){
-  //      for (var n in this.notes){
-  //        notes[n].play(length);
-  //      }
-  //    }
-  //  }
-  //}
+  
   window.Composition = function(){
+    
+  }
+  
+  window.motif = function(){
     
   }
   
@@ -274,18 +312,27 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     //this.progression.push([5, scale.getChord(5, this.octave, 1)]);
     //this.progression.push([6, scale.getChord(0, this.octave+1, 3)]);
     
+    this.generate = function(type){
+      this.progression = [];
+      var total_notes = 8;
+      for (var i = 0; i<total_notes; i++){
+        var tonic = (i+1 == total_notes)?0:Math.floor(Math.random()*8);//always end on the tonic
+        var high1 = scale.getChord(tonic, this.octave+2, 1).contract(.5).arpeggiate(.33).invert().remove();
+        var high2 = scale.getChord(tonic, this.octave+2, 1).contract(.5).arpeggiate(.33).invert().remove();
+        var low = scale.getChord(tonic, this.octave, 1).extend();
+        this.progression.push([i*2+1, high1]);
+        this.progression.push([i*2, high2]);
+        this.progression.push([i*2, low]);
+      }
+      return this;
+    }
     
-    this.progression.push([0, scale.getChord(0, this.octave, 1)]);
-    this.progression.push([1, scale.getChord(1, this.octave, 1)]);
-    this.progression.push([2, scale.getChord(2, this.octave, 1)]);
-    this.progression.push([3, scale.getChord(3, this.octave, 1)]);
-    this.progression.push([4, scale.getChord(4, this.octave, 1)]);
-    this.progression.push([5, scale.getChord(5, this.octave, 1)]);
-    this.progression.push([6, scale.getChord(6, this.octave, 1)]);
-    this.progression.push([7, scale.getChord(7, this.octave, 1)]);
-    
-    this.generate = function(){
-      
+    this.demo = function(){
+      this.progression = [];
+      for (var i = 0; i<8; i++){
+        this.progression.push([i, scale.getChord(i, this.octave, 1)]);//tonic, octave, length
+      }
+      return this;
     }
     
     this.play = function(){
@@ -342,6 +389,16 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
       }else
         return duration;
     }
+    this.extend = function(amount){
+      amount = (amount == undefined)?1:parseInt(amount);
+      duration += amount;
+      return this;
+    }
+    this.contract = function(amount){
+      amount = (amount == undefined)?1:parseInt(amount);
+      duration -= amount;
+      return this;
+    }
     this.octave = function (_octave){
       if (_octave){
         octave = parseInt(_octave);
@@ -378,9 +435,9 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     this.clone = function(){
       return new Note(note);
     }
-    this.play = function(length){
+    this.play = function(){
       //length = length || tempo;//play for a whole measure
-      length = (duration*beat_length)/1000;
+      var length = (duration*beat_length)/1000;
       if (MIDI.api){
         MIDI.noteOn(0, note, velocity);
         MIDI.noteOff(0, note, length);
@@ -482,5 +539,23 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
       init();
     }
   });
+  
+  window.Math.random.flip = function(){
+    return Math.floor(Math.random()*2);
+  }
+  window.Math.random.range = function(){
+    var min = 0, max = 1;
+    switch (arguments.length){
+      case 2:
+        min = arguments[0];
+        max = arguments[1];
+        break;
+      case 1:
+        min = 0;
+        max = arguments[0];
+        break;
+    }
+    return min + Math.round(Math.random()*(max-min));
+  }
   
 })(jQuery);
