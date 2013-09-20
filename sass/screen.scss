@@ -3,7 +3,7 @@ body{
   margin: 0;
 }
 
-div.content{
+div#content{
   margin: 8px;
 }
 
@@ -12,12 +12,19 @@ div.content{
   width:1196px;
 }
 
+#visualization{
+  width:100%;
+  svg{
+    width: 100%;
+  }
+}
+
 footer{
   text-align: center;
   font-size: 0.6em;
   color: #555555;
   font-weight: bold;
-  position: absolute;
+  position: fixed;
   bottom: 15px;
   width: 100%;
   a{

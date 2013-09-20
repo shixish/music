@@ -8,11 +8,34 @@ var beat_length = 1000/(tempo/60);
 MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI note range that we have sounds for is 21 to 108
 
 (function($){
-  var $body = $(document.body), $piano = $('#piano', $body), $controls = $('#controls', $body);
+  Array.rotate = function(arr, n){
+    n = n!=undefined?n:1;
+    var len = arr.length;
+    var out = [];
+    for (var i = 0; i<len; i++){
+      var pos = (i+n)%len;
+      if (pos < 0) pos += Math.floor((i+n)/len)*-len;
+      out.push(arr[pos]);
+    }
+    return out;
+  }
+  
+  Array.double = function(arr){
+    var len = arr.length;
+    var out = [];
+    for (var i = 0; i<len; i++){
+      out.push(arr[i]);
+      out.push(arr[i]);
+    }
+    return out;
+  }
+  
+  var $body = $(document.body), $piano = $('#piano', $body), $viz = $('#visualization', $body), $controls = $('#controls', $body);
   var piano, progression;
   
   var init = function(){
     piano = new Piano($piano[0]);
+    viz = new Visualization($viz[0]);
     
     window.scale = new Scale();
     //window.scale = Scale.generate();
@@ -32,9 +55,89 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     });
     
     var $play = $('<button>').html('Play Something').appendTo($controls).click(function(e){
-      progression = new Progression(scale, 3).generate();
-      progression.play();
+      demo_comp1();
     });
+    
+    function demo_comp2(){
+      comp = new Composition();
+      var twelve_bar_blues = [0, 0, 0, 0,  3, 3, 0, 0,  4, 4, 0, 0];
+      var four_chords = Array.rotate([0, 4, 5, 3], Math.random.range(-1, 2));//I-V-vi-IV
+      var progression = $.merge([1, 1, 1, 1], four_chords, [1, 1, 1, 1], []);
+      var bass_options = {spacing: 2, duration:2, transform:[
+        //['arpeggiate', [.33]],
+      ]};
+      var chorus_bassA = new Progression(scale, 3);
+      chorus_bassA.init([1, 1, 7, 1], bass_options);
+      chorus_bassA.init(four_chords, bass_options);
+      chorus_bassA.init([1, 1, 1, 1], bass_options);
+      chorus_bassA.init(four_chords, bass_options);
+      //chorus_bassA.init([4, 4, 1, 1], bass_options);
+      //chorus_bassA.init([5, 5, 1, 1], bass_options);
+      //chorus_bassA.init(four_chords, bass_options);
+      //chorus_bassA.init(four_chords, bass_options);
+      chorus_bassA.init([1, 1, 1, 1], bass_options);
+      chorus_bassA.init([1, 1, 5, 1], bass_options);
+      //var chorus_bassB = new Progression(scale, 3).init(twelve_bar_blues, {spacing: 2, duration:4, transform:[
+      //  ['invert']
+      //]});
+      var main_melody_transformations = [
+        ['arpeggiate', [.33]],
+        ['remove', ['random']]
+      ];
+      var crazy_melody_transformations = [
+        ['arpeggiate', [.33]],
+        ['remove', ['random']],
+        ['invert']
+      ];
+      var chorus_melodyA = new Progression(scale, 5).init(twelve_bar_blues, {double:true, transform:main_melody_transformations});
+      var chorus_melodyB = new Progression(scale, 6).init(twelve_bar_blues, {double:true, transform:crazy_melody_transformations});
+      var bass_offset = 1, melody_offset = 0;
+      comp.add(0, 24*0+bass_offset,   chorus_bassA);
+      //comp.add(1, 24*0+melody_offset, chorus_melodyA);
+      //comp.add(0, 24*1+bass_offset,   chorus_bassA);
+      //comp.add(2, 24*1+melody_offset, chorus_melodyB);
+      //comp.add(0, 12, main);
+      comp.play();
+    }
+    
+    function demo_comp1(){
+      comp = new Composition();
+      var twelve_bar_blues = [0, 0, 0, 0,  3, 3, 0, 0,  4, 4, 0, 0];
+      var doubled_blues = Array.double(twelve_bar_blues);
+      var chorus_bassA = new Progression(scale, 3).init(twelve_bar_blues, {spacing: 2, duration:2, transform:[
+        
+      ]});
+      var chorus_bassB = new Progression(scale, 3).init(twelve_bar_blues, {spacing: 2, duration:2, transform:[
+        ['invert'],
+      ]});
+      var main_melody_transformations = [
+        ['arpeggiate', [.33]],
+        ['remove', ['random']],
+      ];
+      var crazy_melody_transformations = [
+        ['arpeggiate', [.33]],
+        ['remove', ['random']],
+        ['invert'],
+      ];
+      var chorus_melodyA = new Progression(scale, 5).init(doubled_blues, {transform:main_melody_transformations});
+      var chorus_melodyB = new Progression(scale, 6).init(doubled_blues, {transform:crazy_melody_transformations});
+      var chorus_melodyC = new Progression(scale, 6).init(doubled_blues, {transform:crazy_melody_transformations});
+      var bass_offset = 1, melody_offset = 0;
+      comp.add(0, 24*0+bass_offset,   chorus_bassA);
+      comp.add(1, 24*0+melody_offset, chorus_melodyA);
+      comp.add(0, 24*1+bass_offset,   chorus_bassA);
+      comp.add(2, 24*1+melody_offset, chorus_melodyB);
+      comp.add(0, 24*2+bass_offset,   chorus_bassA);
+      comp.add(1, 24*2+melody_offset, chorus_melodyA);
+      comp.add(0, 24*3+bass_offset,   chorus_bassB);
+      comp.add(2, 24*3+melody_offset, chorus_melodyC);
+      comp.add(0, 24*4+bass_offset,   chorus_bassB);
+      comp.add(1, 24*4+melody_offset, chorus_melodyA);
+      comp.add(0, 24*5+bass_offset,   chorus_bassA);
+      comp.add(1, 24*5+melody_offset, chorus_melodyA);
+      //comp.add(0, 12, main);
+      comp.play();
+    }
   }
   
   window.Scale = function(_options){
@@ -140,6 +243,9 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     
     this.remove = function(_id){
       if (_id == undefined) {
+        this.notes.pop();
+        return this;
+      } else if (_id == 'random'){
         if (Math.random.flip())//reduce the changes of it deleting something
           return this;
         _id = Math.random.range(0, this.notes.length-1);
@@ -252,6 +358,15 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
       return this;
     }
     
+    this.transform = function(transformations){
+      for (var t in transformations){
+        var transform_type = transformations[t][0],
+            transform_options = transformations[t][1]?transformations[t][1]:[];
+        this[transform_type].apply(this, transform_options);
+      }
+      return this;
+    }
+    
     //
     //Initialize
     //
@@ -291,7 +406,25 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
   }
   
   window.Composition = function(){
-    
+    this.lines = [];
+    this.add = function(line, time, thing){
+      if (!this.lines[line]) this.lines[line] = [];
+      this.lines[line].push([time, thing]);
+    }
+    this.generate = function(line, time){
+      
+    }
+    this.play = function(){
+      for (var l in this.lines){
+        for (var t in this.lines[l]){
+          (function(line, start, thing){
+            setTimeout(function(){
+              thing.play();
+            }, start);
+          })(l, this.lines[l][t][0]*beat_length, this.lines[l][t][1]);
+        }
+      }
+    }
   }
   
   window.motif = function(){
@@ -302,6 +435,7 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     this.scale = _scale;
     this.octave = _octave!=undefined?parseInt(_octave):default_octave;
     this.progression = [];
+    this.length = 0;
     //this.bpm = 4; //beats per measure
     //this.progression.push([0, scale.getChord(0, this.octave, 1)]);
     //this.progression.push([1, scale.getChord(0, this.octave, .25)]);
@@ -317,21 +451,43 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
       var total_notes = 8;
       for (var i = 0; i<total_notes; i++){
         var tonic = (i+1 == total_notes)?0:Math.floor(Math.random()*8);//always end on the tonic
-        var high1 = scale.getChord(tonic, this.octave+2, 1).contract(.5).arpeggiate(.33).invert().remove();
+        var high1 = scale.getChord(tonic, this.octave+2, 1).contract(.5).arpeggiate(.33).invert();
         var high2 = scale.getChord(tonic, this.octave+2, 1).contract(.5).arpeggiate(.33).invert().remove();
-        var low = scale.getChord(tonic, this.octave, 1).extend();
-        this.progression.push([i*2+1, high1]);
-        this.progression.push([i*2, high2]);
-        this.progression.push([i*2, low]);
+        var low = scale.getChord(tonic, this.octave, 1).invert().extend();
+        this.add(i*2+1, high1);
+        this.add(i*2+2, high2);
+        this.add(i*2, low);
       }
+      return this;
+    }
+    
+    this.init = function(tonic_array, _options){
+      var opt = $.extend({
+        duration:1,
+        spacing:1,
+        transform:[],
+      }, _options);
+      var start_time = this.length;
+      for (var i in tonic_array){
+        this.add(start_time, scale.getChord(tonic_array[i], this.octave, opt.duration).transform(opt.transform));
+        start_time += opt.spacing;
+      }
+      this.length = start_time;
+      return this;
+    }
+    
+    //time == when to play it, thing = a chord or note or something that can be played
+    this.add = function(time, thing){
+      this.progression.push([time, thing]);
       return this;
     }
     
     this.demo = function(){
       this.progression = [];
-      for (var i = 0; i<8; i++){
-        this.progression.push([i, scale.getChord(i, this.octave, 1)]);//tonic, octave, length
-      }
+      //for (var i = 0; i<8; i++){
+      //  this.add(i, scale.getChord(i, this.octave, 1));//tonic, octave, length
+      //}
+      this.init([0, 1, 2, 3, 4, 5, 6, 7]);
       return this;
     }
     
@@ -524,6 +680,15 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
       if (note.isWhite())//only increment when it's a white key
         num++;
     }
+  }
+  
+  window.Visualization = function(element){
+    //initialize the piano:
+    var paper = Raphael(element, 316, 316);//x,y,w,h
+    rect = paper.rect(15, 15, 158, 158).toBack();
+    rect.attr("fill", '#dddddd');
+    
+    //79 pixels are scrolled per mouse wheel scroll on my screen.
   }
   
   //This article talks about the MIDI standard for representing notes (0-127).
