@@ -62,21 +62,27 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
       comp = new Composition();
       var twelve_bar_blues = [0, 0, 0, 0,  3, 3, 0, 0,  4, 4, 0, 0];
       var four_chords = Array.rotate([0, 4, 5, 3], Math.random.range(-1, 2));//I-V-vi-IV
-      var progression = $.merge([1, 1, 1, 1], four_chords, [1, 1, 1, 1], []);
       var bass_options = {spacing: 2, duration:2, transform:[
         //['arpeggiate', [.33]],
       ]};
+      var pattern = Array.double(Array.double([2, 5, 4, 0, 4, 5, 3, 0]));
       var chorus_bassA = new Progression(scale, 3);
-      chorus_bassA.init([1, 1, 7, 1], bass_options);
-      chorus_bassA.init(four_chords, bass_options);
-      chorus_bassA.init([1, 1, 1, 1], bass_options);
-      chorus_bassA.init(four_chords, bass_options);
-      //chorus_bassA.init([4, 4, 1, 1], bass_options);
-      //chorus_bassA.init([5, 5, 1, 1], bass_options);
-      //chorus_bassA.init(four_chords, bass_options);
-      //chorus_bassA.init(four_chords, bass_options);
-      chorus_bassA.init([1, 1, 1, 1], bass_options);
-      chorus_bassA.init([1, 1, 5, 1], bass_options);
+      chorus_bassA.init([0, 0, 0, 0], bass_options);
+      chorus_bassA.init(pattern, bass_options);
+      //chorus_bassA.init([0, 0, 0, 0], bass_options);
+      //chorus_bassA.init([2, 2, 2, 2], bass_options);
+      //chorus_bassA.init([5, 5, 5, 5], bass_options);
+      //chorus_bassA.init([3, 3, 3, 3], bass_options);
+      //chorus_bassA.init([0, 0, 0, 0], bass_options);
+      //chorus_bassA.init([4, 4, 4, 4], bass_options);
+      //chorus_bassA.init([5, 5, 5, 5], bass_options);
+      //chorus_bassA.init([3, 3, 3, 3], bass_options);
+      //chorus_bassA.init([0, 0, 0, 0], bass_options);
+      //chorus_bassA.init([2, 2, 2, 2], bass_options);
+      //chorus_bassA.init([5, 5, 5, 5], bass_options);
+      //chorus_bassA.init([3, 3, 3, 3], bass_options);
+      //chorus_bassA.init([0, 0, 0, 0], bass_options);
+      chorus_bassA.init([0, 0, 4, 0], bass_options);
       //var chorus_bassB = new Progression(scale, 3).init(twelve_bar_blues, {spacing: 2, duration:4, transform:[
       //  ['invert']
       //]});
