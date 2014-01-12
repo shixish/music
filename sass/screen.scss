@@ -1,15 +1,19 @@
 body{
   font-family: sans-serif;
   margin: 0;
+  padding: 8px;
 }
 
-div#content{
-  margin: 8px;
+#content{
+  background: white;
 }
 
 #piano{
-  margin:auto;
-  width:1196px;
+  margin: auto;
+  width: 100%;
+  svg{
+    width: 100%;
+  }
 }
 
 #visualization{

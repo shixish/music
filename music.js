@@ -675,7 +675,10 @@ MIDI.key_range = [MIDI.pianoKeyOffset, MIDI.pianoKeyOffset+num_keys-1];//MIDI no
     }
     
     //initialize the piano:
-    var paper = Raphael(element, key_width*52, 120);//x,y,w,h
+    var h = 120, w = key_width*51;
+    var paper = Raphael(element, w, h);//x,y,w,h
+    paper.setViewBox(0,0,w,h,true);
+    
     this.keys = {};
     
     var num = 0;
