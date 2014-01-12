@@ -1,6 +1,22 @@
 #content{
   font-family: sans-serif;
   background: white;
+  footer{
+    text-align: center;
+    font-size: 0.6em;
+    color: #555555;
+    font-weight: bold;
+    position: fixed;
+    bottom: 15px;
+    width: 100%;
+    a{
+      text-decoration: none;
+      color: #555555;
+    }
+    a:hover{
+      text-decoration: underline;
+    }
+  }
 }
 
 #piano{
@@ -18,19 +34,3 @@
   }
 }
 
-footer{
-  text-align: center;
-  font-size: 0.6em;
-  color: #555555;
-  font-weight: bold;
-  position: fixed;
-  bottom: 15px;
-  width: 100%;
-  a{
-    text-decoration: none;
-    color: #555555;
-  }
-  a:hover{
-    text-decoration: underline;
-  }
-}
